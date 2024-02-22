@@ -27,7 +27,7 @@
                             <form>
                                 <div class="form-group">
                                     <input type="number" class="form-control" id="anzahlAktienKaufen"
-                                        v-model.number="anzahlAktien" placeholder="Anzahl">
+                                        v-model.number="anzahlAktien" placeholder="Anzahl" min="1">
                                     <small id="anzahlAktienKaufenHelp" class="form-text text-muted">Gebühren: Orderprovision
                                         4,95 € zzgl.
                                         0,25% | min. 9,99 € max. 59,99 €</small>
@@ -88,7 +88,7 @@
                             <form>
                                 <div class="form-group">
                                     <input type="number" class="form-control" id="anzahlAktienVerkaufen"
-                                        v-model.number="anzahlAktien" placeholder="Anzahl">
+                                        v-model.number="anzahlAktien" placeholder="Anzahl" min="1">
                                     <small id="anzahlAktienVerkaufenHelp" class="form-text text-muted">Verfügbare Anzahl an
                                         Aktien: 12 <br>
                                         Gebühren: Orderprovision 4,95 € zzgl. 0,25 % | min. 9,99 € max. 59,99 €</small>
@@ -172,6 +172,7 @@ export default {
         let marketCondition = 'neutral'; // 'bull', 'bear', 'neutral'
         let lineChart;
 
+        
         const openKaufenModal = () => {
             new bootstrap.Modal(kaufenModal.value).show();
         };
@@ -183,6 +184,18 @@ export default {
         const gebuehren = computed(() => {
             const provision = 4.95 + gesamtPreisGeldkurs.value * 0.0025;
             return Math.max(9.99, Math.min(59.99, provision));
+        });
+
+        // Berechnete Eigenschaft, die die Anzahl der Aktien überwacht und korrigiert
+        const validierteAnzahlAktien = computed({
+            get: () => anzahlAktien.value,
+            set: (newValue) => {
+                if (newValue >= 0 && Number.isInteger(newValue)) {
+                    anzahlAktien.value = newValue;
+                } else {
+                    anzahlAktien.value = Math.max(0, Math.round(newValue));
+                }
+            },
         });
 
         const gesamtPreisInklGebuehren = computed(() => gesamtPreisGeldkurs.value + gebuehren.value);
@@ -300,6 +313,7 @@ export default {
             gesamtPreisBriefkurs,
             gebuehren,
             gesamtPreisInklGebuehren,
+            validierteAnzahlAktien,
             handleKaufen,
             openKaufenModal,
             openVerkaufenModal,
