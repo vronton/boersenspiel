@@ -60,7 +60,47 @@
 
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary rounded-pill">Jetzt kaufen</button>
+                            <button type="button" class="btn btn-primary rounded-pill"
+                                @click="openZusammenfassungKaufenModal">Jetzt kaufen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZusammenfassungKaufenModal Modal -->
+            <div class="modal fade" ref="zusammenfassungKaufenModal" id="zusammenfassungKaufenModal" tabindex="-1"
+                aria-labelledby="zusammenfassungKaufenModallLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Vielen Dank für deinen Kauf!!</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+
+                            <table class="table table-borderless">
+                                <tbody>
+
+                                    <tr>
+                                        <td>Anzahl gekaufter Aktien</td>
+                                        <td></td>
+                                        <td>{{ gekaufteAnzahlAktien }} Stück</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Gezahlter Betrag (inklusive Gebühren)</td>
+                                        <td></td>
+                                        <td>{{ gebuehren.toFixed(2) }} €</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-dark rounded-pill"
+                                @click="openZusammenfassungKaufenModal">Schließen</button>
                         </div>
                     </div>
                 </div>
@@ -160,6 +200,7 @@ export default {
         // Reaktive Referenzen
         const kaufenModal = ref(null);
         const verkaufenModal = ref(null);
+        const zusammenfassungKaufenModal = ref(null);
 
         const lastBuyPrice = ref(100); // Startpreis
         const lastSellPrice = ref(99); // Startpreis
@@ -172,7 +213,7 @@ export default {
         let marketCondition = 'neutral'; // 'bull', 'bear', 'neutral'
         let lineChart;
 
-        
+
         const openKaufenModal = () => {
             new bootstrap.Modal(kaufenModal.value).show();
         };
@@ -180,6 +221,8 @@ export default {
         const openVerkaufenModal = () => {
             new bootstrap.Modal(verkaufenModal.value).show();
         };
+
+        
 
         const gebuehren = computed(() => {
             const provision = 4.95 + gesamtPreisGeldkurs.value * 0.0025;
@@ -206,6 +249,20 @@ export default {
             // Schließe das Modal nach dem Kauf
             const modal = bootstrap.Modal.getInstance(kaufenModal.value);
             modal.hide();
+        };
+
+
+        const openZusammenfassungKaufenModal = () => {
+            // Öffnen des Zusammenfassung-Kaufen-Modals
+            const zusammenfassungModalInstance = new bootstrap.Modal(zusammenfassungKaufenModal.value);
+            zusammenfassungModalInstance.show();
+
+            // Schließen des Kaufen-Modals
+            const kaufenModalInstance = bootstrap.Modal.getInstance(kaufenModal.value);
+            kaufenModalInstance.hide();
+
+            const gekaufteAnzahlAktien = anzahlAktien;
+            return gekaufteAnzahlAktien;
         };
 
         const adjustProbabilityAndTrend = (change, trend) => {
@@ -308,6 +365,7 @@ export default {
         return {
             kaufenModal,
             verkaufenModal,
+            zusammenfassungKaufenModal,
             anzahlAktien,
             gesamtPreisGeldkurs,
             gesamtPreisBriefkurs,
@@ -317,6 +375,7 @@ export default {
             handleKaufen,
             openKaufenModal,
             openVerkaufenModal,
+            openZusammenfassungKaufenModal,
             chartRef,
             lastBuyPrice,
             lastSellPrice,
