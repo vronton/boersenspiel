@@ -53,15 +53,15 @@
                                     <tr>
                                         <td><b>Gesamt</b></td>
                                         <td></td>
-                                        <td><b>-{{ gesamtPreisInklGebuehren.toFixed(2) }} €</b></td>
+                                        <td><b>{{ gesamtPreisInklGebuehren.toFixed(2) }} €</b></td>
                                     </tr>
                                 </tbody>
                             </table>
 
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary rounded-pill"
-                                @click="openZusammenfassungKaufenModal">Jetzt kaufen</button>
+                            <button type="button" class="btn btn-primary rounded-pill" @click="handleKaufen">Jetzt
+                                kaufen</button>
                         </div>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Vielen Dank für deinen Kauf!!</h5>
+                            <h5 class="modal-title">Vielen Dank für deinen <b>Kauf</b> !!</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -86,21 +86,21 @@
                                     <tr>
                                         <td>Anzahl gekaufter Aktien</td>
                                         <td></td>
-                                        <td>{{ gekaufteAnzahlAktien }} Stück</td>
+                                        <td>{{ anzahlAktienZumZeitpunkt }} Stück</td>
+                                        <td> {{ depotBestand }} Stück</td>
                                     </tr>
 
                                     <tr>
                                         <td>Gezahlter Betrag (inklusive Gebühren)</td>
                                         <td></td>
-                                        <td>{{ gebuehren.toFixed(2) }} €</td>
+                                        <td>{{ kaufPreisZumZeitpunkt.toFixed(2) }} €</td>
                                     </tr>
                                 </tbody>
                             </table>
 
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-dark rounded-pill"
-                                @click="openZusammenfassungKaufenModal">Schließen</button>
+                            <button type="button" class="btn btn-dark rounded-pill" @click="closeModals">Schließen</button>
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
                                     <input type="number" class="form-control" id="anzahlAktienVerkaufen"
                                         v-model.number="anzahlAktien" placeholder="Anzahl" min="1">
                                     <small id="anzahlAktienVerkaufenHelp" class="form-text text-muted">Verfügbare Anzahl an
-                                        Aktien: 12 <br>
+                                        Aktien: {{ depotBestand }} Stück <br>
                                         Gebühren: Orderprovision 4,95 € zzgl. 0,25 % | min. 9,99 € max. 59,99 €</small>
                                 </div>
                             </form>
@@ -168,15 +168,62 @@
                                         <td>{{ lastSellPrice.toFixed(2) }} €</td>
                                     </tr>
                                     <tr>
+                                        <td>Gebühren</td>
+                                        <td></td>
+                                        <td>{{ gebuehren.toFixed(2) }} €</td>
+                                    </tr>
+
+                                    <tr>
                                         <td><b>Gesamt</b></td>
                                         <td></td>
-                                        <td><b>{{ gesamtPreisBriefkurs.toFixed(2) }} €</b></td>
+                                        <td><b>{{ gesamtPreisBriefkursInklGebuehren.toFixed(2) }} €</b></td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary rounded-pill">Jetzt verkaufen</button>
+                            <button type="button" class="btn btn-secondary rounded-pill" @click="handleVerkaufen">Jetzt
+                                verkaufen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZusammenfassungVerkaufenModal Modal -->
+            <div class="modal fade" ref="zusammenfassungVerkaufenModal" id="zusammenfassungVerkaufenModal" tabindex="-1"
+                aria-labelledby="zusammenfassungKaufenModallLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Vielen Dank für deinen <b>Verkauf</b>!! </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+
+                            <table class="table table-borderless">
+                                <tbody>
+
+                                    <tr>
+                                        <td>Anzahl gekaufter Aktien</td>
+                                        <td></td>
+                                        <td>50 Stück</td>
+                                        <td> 50 Stück</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Gezahlter Betrag (inklusive Gebühren)</td>
+                                        <td></td>
+                                        <td> 50 €</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-dark rounded-pill"
+                                @click="closeVerkaufenModals">Schließen</button>
                         </div>
                     </div>
                 </div>
@@ -192,6 +239,8 @@ import { ref, onMounted, computed } from 'vue';
 import * as bootstrap from 'bootstrap';
 import Chart from 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
+import { useStore } from 'vuex';
+
 
 
 export default {
@@ -201,6 +250,10 @@ export default {
         const kaufenModal = ref(null);
         const verkaufenModal = ref(null);
         const zusammenfassungKaufenModal = ref(null);
+        const zusammenfassungVerkaufenModal = ref(null);
+        const store = useStore(); // Vuex Store instanzieren
+        const depotBestand = ref(0);
+
 
         const lastBuyPrice = ref(100); // Startpreis
         const lastSellPrice = ref(99); // Startpreis
@@ -209,6 +262,10 @@ export default {
         // Berechnet den Gesamtpreis basierend auf dem aktuellen Preis und der Anzahl der Aktien
         const gesamtPreisBriefkurs = computed(() => anzahlAktien.value * lastSellPrice.value);
         const gesamtPreisGeldkurs = computed(() => anzahlAktien.value * lastBuyPrice.value);
+
+        const kaufPreisZumZeitpunkt = ref(0);
+        const anzahlAktienZumZeitpunkt = ref(0);
+
         let trendCounter = { buy: 0, sell: 0 }; // Zählt, wie oft der Preis in Folge gestiegen oder gefallen ist
         let marketCondition = 'neutral'; // 'bull', 'bear', 'neutral'
         let lineChart;
@@ -222,14 +279,19 @@ export default {
             new bootstrap.Modal(verkaufenModal.value).show();
         };
 
-        
+
 
         const gebuehren = computed(() => {
             const provision = 4.95 + gesamtPreisGeldkurs.value * 0.0025;
             return Math.max(9.99, Math.min(59.99, provision));
         });
 
-        // Berechnete Eigenschaft, die die Anzahl der Aktien überwacht und korrigiert
+        const gebuehrenBriefkurs = computed(() => {
+            const provision = 4.95 + gesamtPreisBriefkurs.value * 0.0025;
+            return Math.max(9.99, Math.min(59.99, provision));
+        });
+
+
         const validierteAnzahlAktien = computed({
             get: () => anzahlAktien.value,
             set: (newValue) => {
@@ -242,13 +304,50 @@ export default {
         });
 
         const gesamtPreisInklGebuehren = computed(() => gesamtPreisGeldkurs.value + gebuehren.value);
+        const gesamtPreisBriefkursInklGebuehren = computed(() => gesamtPreisBriefkurs.value + gebuehrenBriefkurs.value);
 
         const handleKaufen = () => {
-            // Logik zum Hinzufügen der gekauften Aktien zum Depot und Aktualisierung des Guthabens könnte hier implementiert werden
-            console.log(`Gekauft: ${anzahlAktien.value} Aktien zum Preis von ${gesamtPreisInklGebuehren.value}€ inkl. Gebühren`);
-            // Schließe das Modal nach dem Kauf
-            const modal = bootstrap.Modal.getInstance(kaufenModal.value);
-            modal.hide();
+            if (anzahlAktien.value > 0) {
+
+                anzahlAktienZumZeitpunkt.value = anzahlAktien.value;
+                kaufPreisZumZeitpunkt.value = gesamtPreisGeldkurs.value + gebuehren.value;
+
+                depotBestand.value += parseInt(anzahlAktien.value, 10);
+                const preis = gesamtPreisGeldkurs.value + gebuehren.value;
+
+                store.dispatch('aktualisiereAnzahlAktienImGeldbeutel', depotBestand);
+                store.dispatch('aktualisiereGuthaben', -preis);
+
+                openZusammenfassungKaufenModal();
+            } else {
+                alert("Bitte geben Sie eine gültige Anzahl von Aktien ein.");
+            }
+        };
+
+        const handleVerkaufen = () => {
+            // Stelle sicher, dass anzahlAktien und depotBestand korrekt verglichen werden
+            if (anzahlAktien.value > 0 && anzahlAktien.value <= depotBestand.value) {
+                // Aktualisiere anzahlAktienZumZeitpunkt und kaufPreisZumZeitpunkt
+                anzahlAktienZumZeitpunkt.value = anzahlAktien.value;
+                kaufPreisZumZeitpunkt.value = gesamtPreisGeldkurs.value + gebuehren.value;
+
+                // Reduziere depotBestand, da Aktien verkauft werden
+                depotBestand.value -= parseInt(anzahlAktien.value, 10); // Hier sollte reduziert, nicht addiert werden
+                const preis = gesamtPreisGeldkurs.value + gebuehren.value;
+
+                // Aktualisiere den Store mit den neuen Werten
+                store.dispatch('aktualisiereAnzahlAktienImGeldbeutel', depotBestand.value);
+                store.dispatch('aktualisiereGuthaben', -preis);
+
+                // Öffne das Modal für die Zusammenfassung des Verkaufs
+                openZusammenfassungVerkaufenModal();
+            } else if (anzahlAktien.value > depotBestand.value) {
+                // Benachrichtige den Benutzer, wenn versucht wird, mehr Aktien zu verkaufen als vorhanden
+                alert("Sie haben nicht so viele Aktien im Depot.");
+            } else {
+                // Benachrichtige den Benutzer, wenn eine ungültige Anzahl von Aktien eingegeben wurde
+                alert("Bitte geben Sie eine gültige Anzahl von Aktien ein.");
+            }
         };
 
 
@@ -260,10 +359,36 @@ export default {
             // Schließen des Kaufen-Modals
             const kaufenModalInstance = bootstrap.Modal.getInstance(kaufenModal.value);
             kaufenModalInstance.hide();
-
-            const gekaufteAnzahlAktien = anzahlAktien;
-            return gekaufteAnzahlAktien;
         };
+
+
+
+        const openZusammenfassungVerkaufenModal = () => {
+            // Öffnen des Zusammenfassung-Kaufen-Modals
+            const zusammenfassungVerkaufenModalInstance = new bootstrap.Modal(zusammenfassungVerkaufenModal.value);
+            zusammenfassungVerkaufenModalInstance.show();
+
+            // Schließen des Verkaufen-Modals
+            const verkaufenModalInstance = bootstrap.Modal.getInstance(verkaufenModal.value);
+            verkaufenModalInstance.hide();
+        };
+
+
+        const closeModals = () => {
+
+            // Schließen des Zusammenfassung-Kaufen-Modals
+            const zusammenfassungKaufenModalInstance = bootstrap.Modal.getInstance(zusammenfassungKaufenModal.value);
+            zusammenfassungKaufenModalInstance.hide();
+        };
+
+        const closeVerkaufenModals = () => {
+
+            // Schließen des Zusammenfassung-Kaufen-Modals
+            const zusammenfassungVerkaufenModalInstance = bootstrap.Modal.getInstance(zusammenfassungVerkaufenModal.value);
+            zusammenfassungVerkaufenModalInstance.hide();
+        };
+
+
 
         const adjustProbabilityAndTrend = (change, trend) => {
             if (change > 0) {
@@ -366,19 +491,30 @@ export default {
             kaufenModal,
             verkaufenModal,
             zusammenfassungKaufenModal,
+            zusammenfassungVerkaufenModal,
             anzahlAktien,
             gesamtPreisGeldkurs,
             gesamtPreisBriefkurs,
             gebuehren,
+            gebuehrenBriefkurs,
             gesamtPreisInklGebuehren,
+            gesamtPreisBriefkursInklGebuehren,
             validierteAnzahlAktien,
+            anzahlAktienZumZeitpunkt,
+            kaufPreisZumZeitpunkt,
             handleKaufen,
+            handleVerkaufen,
             openKaufenModal,
             openVerkaufenModal,
             openZusammenfassungKaufenModal,
+            openZusammenfassungVerkaufenModal,
+            closeModals,
+            closeVerkaufenModals,
             chartRef,
             lastBuyPrice,
             lastSellPrice,
+            depotBestand,
+
         };
     }
 };

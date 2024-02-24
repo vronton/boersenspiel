@@ -21,7 +21,6 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import AktienCard from '@/components/AktienCard.vue';
 import Geldbeutel from '@/components/Geldbeutel.vue';
-import Verlauf from '@/components/Verlauf.vue';
 
 import { useRouter } from 'vue-router';
 
@@ -30,7 +29,7 @@ export default {
   components: {
     AktienCard,
     Geldbeutel,
-    Verlauf
+    
   },
   setup() {
     const router = useRouter();
