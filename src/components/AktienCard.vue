@@ -48,12 +48,12 @@
                                     <tr>
                                         <td>Gebühren</td>
                                         <td></td>
-                                        <td>{{ gebuehren.toFixed(2) }} €</td>
+                                        <td>- {{ gebuehren.toFixed(2) }} €</td>
                                     </tr>
                                     <tr>
                                         <td><b>Gesamt</b></td>
                                         <td></td>
-                                        <td><b>{{ gesamtPreisInklGebuehren.toFixed(2) }} €</b></td>
+                                        <td><b>- {{ gesamtPreisInklGebuehren.toFixed(2) }} €</b></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -86,14 +86,32 @@
                                     <tr>
                                         <td>Anzahl gekaufter Aktien</td>
                                         <td></td>
-                                        <td>{{ anzahlAktienZumZeitpunkt }} Stück</td>
-                                        <td> {{ depotBestand }} Stück</td>
+                                        <td>+ {{ anzahlAktienZumZeitpunkt }} Stück</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Gebühren</td>
+                                        <td></td>
+                                        <td>- {{ gebührenKaufenZumZeitpunkt.toFixed(2) }} €</td>
                                     </tr>
 
                                     <tr>
                                         <td>Gezahlter Betrag (inklusive Gebühren)</td>
                                         <td></td>
-                                        <td>{{ kaufPreisZumZeitpunkt.toFixed(2) }} €</td>
+                                        <td>- {{ kaufPreisZumZeitpunkt.toFixed(2) }} €
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>aktuelles Guthaben</td>
+                                        <td></td>
+                                        <td> {{aktuellesGuthaben.toFixed(2)}} €</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>aktueller Depotbestand</td>
+                                        <td></td>
+                                        <td> {{ depotBestand }} Stück</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -163,20 +181,20 @@
                             <table class="table table-borderless">
                                 <tbody>
                                     <tr>
-                                        <td>Stückpreis</td>
+                                        <td>Verkaufen für (Stückpreis)</td>
                                         <td></td>
                                         <td>{{ lastSellPrice.toFixed(2) }} €</td>
                                     </tr>
                                     <tr>
                                         <td>Gebühren</td>
                                         <td></td>
-                                        <td>{{ gebuehren.toFixed(2) }} €</td>
+                                        <td>- {{ gebuehrenBriefkurs.toFixed(2) }} € </td>
                                     </tr>
 
                                     <tr>
                                         <td><b>Gesamt</b></td>
                                         <td></td>
-                                        <td><b>{{ gesamtPreisBriefkursInklGebuehren.toFixed(2) }} €</b></td>
+                                        <td><b>+ {{ gesamtPreisBriefkursInklGebuehren.toFixed(2) }} €</b></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -206,16 +224,37 @@
                                 <tbody>
 
                                     <tr>
-                                        <td>Anzahl gekaufter Aktien</td>
+                                        <td>Anzahl vekaufter Aktien</td>
                                         <td></td>
-                                        <td>50 Stück</td>
-                                        <td> 50 Stück</td>
+                                        <td>- {{ anzahlAktienZumZeitpunkt }} Stück</td>
                                     </tr>
 
                                     <tr>
-                                        <td>Gezahlter Betrag (inklusive Gebühren)</td>
+                                        <td>Gebühren</td>
                                         <td></td>
-                                        <td> 50 €</td>
+                                        <td>- {{ gebührenVerkaufenZumZeitpunkt.toFixed(2) }} €</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Ausgezahlter Betrag (inklusive Gebühren)</td>
+                                        <td></td>
+                                        <td>+ {{ verkaufPreisZumZeitpunkt.toFixed(2) }} €
+                                        </td>
+                                    </tr>
+                                    <tr>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td>aktuelles Guthaben</td>
+                                        <td></td>
+                                        <td> {{aktuellesGuthaben.toFixed(2)}} €</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>aktueller Depotbestand</td>
+                                        <td></td>
+                                        <td> {{ depotBestand }} Stück</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -253,6 +292,7 @@ export default {
         const zusammenfassungVerkaufenModal = ref(null);
         const store = useStore(); // Vuex Store instanzieren
         const depotBestand = ref(0);
+        const aktuellesGuthaben = ref(50000);
 
 
         const lastBuyPrice = ref(100); // Startpreis
@@ -264,6 +304,9 @@ export default {
         const gesamtPreisGeldkurs = computed(() => anzahlAktien.value * lastBuyPrice.value);
 
         const kaufPreisZumZeitpunkt = ref(0);
+        const verkaufPreisZumZeitpunkt = ref(0);
+        const gebührenVerkaufenZumZeitpunkt = ref(0);
+        const gebührenKaufenZumZeitpunkt = ref(0);
         const anzahlAktienZumZeitpunkt = ref(0);
 
         let trendCounter = { buy: 0, sell: 0 }; // Zählt, wie oft der Preis in Folge gestiegen oder gefallen ist
@@ -304,21 +347,27 @@ export default {
         });
 
         const gesamtPreisInklGebuehren = computed(() => gesamtPreisGeldkurs.value + gebuehren.value);
-        const gesamtPreisBriefkursInklGebuehren = computed(() => gesamtPreisBriefkurs.value + gebuehrenBriefkurs.value);
+        const gesamtPreisBriefkursInklGebuehren = computed(() => gesamtPreisBriefkurs.value - gebuehrenBriefkurs.value);
 
         const handleKaufen = () => {
             if (anzahlAktien.value > 0) {
+                const kosten = gesamtPreisGeldkurs.value + gebuehren.value;
+                if (aktuellesGuthaben.value >= kosten) {
+                    depotBestand.value += parseInt(anzahlAktien.value, 10);
+                    aktuellesGuthaben.value -= kosten;
 
-                anzahlAktienZumZeitpunkt.value = anzahlAktien.value;
-                kaufPreisZumZeitpunkt.value = gesamtPreisGeldkurs.value + gebuehren.value;
+                    anzahlAktienZumZeitpunkt.value = anzahlAktien.value;
+                    gebührenKaufenZumZeitpunkt.value = gebuehren.value;
+                    kaufPreisZumZeitpunkt.value = gesamtPreisGeldkurs.value + gebuehren.value;
+                    const preis = gesamtPreisGeldkurs.value + gebuehren.value;
 
-                depotBestand.value += parseInt(anzahlAktien.value, 10);
-                const preis = gesamtPreisGeldkurs.value + gebuehren.value;
+                    store.dispatch('aktualisiereAnzahlAktienImGeldbeutel', depotBestand);
+                    store.dispatch('aktualisiereGuthaben', -preis);
 
-                store.dispatch('aktualisiereAnzahlAktienImGeldbeutel', depotBestand);
-                store.dispatch('aktualisiereGuthaben', -preis);
-
-                openZusammenfassungKaufenModal();
+                    openZusammenfassungKaufenModal();
+                } else {
+                    alert("Nicht genug Guthaben für den Kauf.");
+                }
             } else {
                 alert("Bitte geben Sie eine gültige Anzahl von Aktien ein.");
             }
@@ -327,13 +376,17 @@ export default {
         const handleVerkaufen = () => {
             // Stelle sicher, dass anzahlAktien und depotBestand korrekt verglichen werden
             if (anzahlAktien.value > 0 && anzahlAktien.value <= depotBestand.value) {
-                // Aktualisiere anzahlAktienZumZeitpunkt und kaufPreisZumZeitpunkt
+                const erloes = gesamtPreisBriefkurs.value - gebuehrenBriefkurs.value;
+                depotBestand.value -= parseInt(anzahlAktien.value, 10);
+                aktuellesGuthaben.value += erloes;
+
                 anzahlAktienZumZeitpunkt.value = anzahlAktien.value;
-                kaufPreisZumZeitpunkt.value = gesamtPreisGeldkurs.value + gebuehren.value;
+                verkaufPreisZumZeitpunkt.value = gesamtPreisBriefkurs.value - gebuehrenBriefkurs.value;
+                gebührenVerkaufenZumZeitpunkt.value = gebuehrenBriefkurs.value;
+
 
                 // Reduziere depotBestand, da Aktien verkauft werden
-                depotBestand.value -= parseInt(anzahlAktien.value, 10); // Hier sollte reduziert, nicht addiert werden
-                const preis = gesamtPreisGeldkurs.value + gebuehren.value;
+                const preis = gesamtPreisBriefkurs.value + gebuehren.value;
 
                 // Aktualisiere den Store mit den neuen Werten
                 store.dispatch('aktualisiereAnzahlAktienImGeldbeutel', depotBestand.value);
@@ -341,6 +394,7 @@ export default {
 
                 // Öffne das Modal für die Zusammenfassung des Verkaufs
                 openZusammenfassungVerkaufenModal();
+           
             } else if (anzahlAktien.value > depotBestand.value) {
                 // Benachrichtige den Benutzer, wenn versucht wird, mehr Aktien zu verkaufen als vorhanden
                 alert("Sie haben nicht so viele Aktien im Depot.");
@@ -502,6 +556,10 @@ export default {
             validierteAnzahlAktien,
             anzahlAktienZumZeitpunkt,
             kaufPreisZumZeitpunkt,
+            verkaufPreisZumZeitpunkt,
+            gebührenVerkaufenZumZeitpunkt,
+            gebührenKaufenZumZeitpunkt,
+            aktuellesGuthaben,
             handleKaufen,
             handleVerkaufen,
             openKaufenModal,
