@@ -3,31 +3,30 @@ import { createStore } from 'vuex';
 
 export default createStore({
   state: {
-    anzahlAktienZumZeitpunkt: 0,
-    kaufPreisZumZeitpunkt: 0,
+    depotBestand: 0, // Initialisierung hinzugefügt
+    aktuellesGuthaben: 50000, // Startguthaben als Initialwert
+    lastSellPrice: 99,
+  },
+  mutations: {
+    aktualisiereAktuellenDepotBestand(state, neuerBestand) {
+      state.depotBestand = neuerBestand;
+    },
+    aktualisiereAktuellesGuthaben(state, betrag) {
+      state.aktuellesGuthaben += betrag;
+    },
+    updateLastSellPrice(state, newPrice) {
+      state.lastSellPrice = newPrice;
+    },
   },
   actions: {
-    aktualisiereAnzahlAktienImGeldbeutel({ commit }, anzahl) {
-        commit('SET_DEPOTBESTAND', anzahl);
+    aktualisiereDepotBestand({ commit }, neuerBestand) {
+      commit('aktualisiereAktuellenDepotBestand', neuerBestand);
     },
     aktualisiereGuthaben({ commit }, betrag) {
-        commit('UPDATE_GUTHABEN', betrag);
+      commit('aktualisiereAktuellesGuthaben', betrag);
     },
-},
-mutations: {
-    SET_DEPOTBESTAND(state, anzahl) {
-
-        const numerischeAnzahl = Number(anzahl);
-    if (!isNaN(numerischeAnzahl)) {
-      state.depotBestand += numerischeAnzahl;
-    }
+    updateLastSellPrice({ commit }, newPrice) {
+      commit('updateLastSellPrice', newPrice);
     },
-    UPDATE_GUTHABEN(state, betrag) {
-
-        const numerischerBetrag = Number(betrag);
-    if (!isNaN(numerischerBetrag)) {
-      state.guthaben += numerischerBetrag;
-    }
-    },
-}
+  },
 });

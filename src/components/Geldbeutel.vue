@@ -7,17 +7,17 @@
           <tr>
             <td>Startguthaben</td>
             <td></td>
-            <td>{{ startGuthaben }} €</td>
+            <td>{{ startGuthaben.toFixed(2) }} €</td>
           </tr>
           <tr>
             <td>Aktuelles Guthaben</td>
             <td></td>
-            <td>{{ guthaben }} €</td>
+            <td>{{ aktuellesGuthaben.toFixed(2)}} €</td>
           </tr>
           <tr>
             <td>Wertentwicklung</td>
             <td></td>
-            <td>{{ wertEntwicklung }} €</td>
+            <td>{{ wertEntwicklung.toFixed(2) }} €</td>
           </tr>
           <tr>
             <td>Depotbestand</td>
@@ -40,22 +40,22 @@ export default {
     const store = useStore();
 
     const startGuthaben = 50000;
-    const depotBestand = computed(() => {
-      return Number(store.state.depotBestand) || 0; // Gibt 0 zurück, wenn die Konvertierung NaN ergibt
-    });
-    const guthaben = computed(() => {
-      return Number(store.state.guthaben) || 0; // Gibt 0 zurück, wenn die Konvertierung NaN ergibt
-    });
+    const depotBestand = computed(() => store.state.depotBestand);
+    const aktuellesGuthaben = computed(() => store.state.aktuellesGuthaben);
+    const aktuellerAktienWert = computed(() => store.state.aktuellerAktienWert);
+    const lastSellPrice = computed(() => store.state.lastSellPrice);
 
     const wertEntwicklung = computed(() => {
-      return guthaben.value - store.state.startGuthaben;
+      return (aktuellesGuthaben.value + (depotBestand.value * lastSellPrice.value))- startGuthaben;
     });
 
     return {
       depotBestand,
-      guthaben,
+      aktuellesGuthaben,
       wertEntwicklung,
       startGuthaben,
+      aktuellerAktienWert,
+      lastSellPrice,
     };
   },
 };

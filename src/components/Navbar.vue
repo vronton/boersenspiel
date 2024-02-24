@@ -2,9 +2,7 @@
   <nav class="navbar" style="background-color: #3578FF;">
   <div class="container-fluid">
     <a class="navbar-brand"> <b>trade</b>lou</a>
-    <button class="navbar-toggler" style="color: white; border: 0px" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon" ></span>
-    </button>
+    
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
@@ -46,10 +44,5 @@ li {
 a {
   color: #ffff;
 }
-.navbar-toggler-icon {
-  color: white; /* Setzt die Farbe des Toggler-Icons auf weiß */
-}
-.navbar-toggler-icon {
-  background-image: url('C:\Users\Dublin\Börsenspiel\boersenspiel\icons8-menü-50.png');
-}
+
 </style>

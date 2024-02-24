@@ -48,12 +48,12 @@
                                     <tr>
                                         <td>Gebühren</td>
                                         <td></td>
-                                        <td>- {{ gebuehren.toFixed(2) }} €</td>
+                                        <td>- {{ gebuehrenBriefkurs.toFixed(2) }} €</td>
                                     </tr>
                                     <tr>
                                         <td><b>Gesamt</b></td>
                                         <td></td>
-                                        <td><b>- {{ gesamtPreisInklGebuehren.toFixed(2) }} €</b></td>
+                                        <td><b>- {{ gesamtPreisBriefkursInklGebuehren.toFixed(2) }} €</b></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -105,7 +105,7 @@
                                     <tr>
                                         <td>aktuelles Guthaben</td>
                                         <td></td>
-                                        <td> {{aktuellesGuthaben.toFixed(2)}} €</td>
+                                        <td> {{ aktuellesGuthaben.toFixed(2) }} €</td>
                                     </tr>
 
                                     <tr>
@@ -153,28 +153,6 @@
                                 </div>
                             </form>
 
-                            <h5> Geldbeutel</h5>
-                            <table class="table table-borderless">
-                                <tbody>
-                                    <tr>
-                                        <td>Startguthaben</td>
-                                        <td></td>
-                                        <td>50.000 €</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Aktuelles Guthaben</td>
-                                        <td></td>
-                                        <td>50.000 €</td>
-                                    </tr>
-                                    <tr>
-                                        <td><b>Wertnetwicklung</b></td>
-                                        <td></td>
-                                        <td><b>+5.000 €</b></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <br>
 
                             <h5>Verkaufen für</h5>
 
@@ -188,13 +166,13 @@
                                     <tr>
                                         <td>Gebühren</td>
                                         <td></td>
-                                        <td>- {{ gebuehrenBriefkurs.toFixed(2) }} € </td>
+                                        <td>- {{ gebuehren.toFixed(2) }} € </td>
                                     </tr>
 
                                     <tr>
                                         <td><b>Gesamt</b></td>
                                         <td></td>
-                                        <td><b>+ {{ gesamtPreisBriefkursInklGebuehren.toFixed(2) }} €</b></td>
+                                        <td><b>+ {{ gesamtPreisInklGebuehren.toFixed(2) }} €</b></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -248,7 +226,7 @@
                                     <tr>
                                         <td>aktuelles Guthaben</td>
                                         <td></td>
-                                        <td> {{aktuellesGuthaben.toFixed(2)}} €</td>
+                                        <td> {{ aktuellesGuthaben.toFixed(2) }} €</td>
                                     </tr>
 
                                     <tr>
@@ -297,12 +275,13 @@ export default {
 
         const lastBuyPrice = ref(100); // Startpreis
         const lastSellPrice = ref(99); // Startpreis
+
+
         const chartRef = ref(null);
         const anzahlAktien = ref(0);
         // Berechnet den Gesamtpreis basierend auf dem aktuellen Preis und der Anzahl der Aktien
-        const gesamtPreisBriefkurs = computed(() => anzahlAktien.value * lastSellPrice.value);
-        const gesamtPreisGeldkurs = computed(() => anzahlAktien.value * lastBuyPrice.value);
-
+        const gesamtPreisBriefkurs = computed(() => anzahlAktien.value * lastBuyPrice.value);
+        const gesamtPreisGeldkurs = computed(() => anzahlAktien.value * lastSellPrice.value);
         const kaufPreisZumZeitpunkt = ref(0);
         const verkaufPreisZumZeitpunkt = ref(0);
         const gebührenVerkaufenZumZeitpunkt = ref(0);
@@ -346,23 +325,23 @@ export default {
             },
         });
 
-        const gesamtPreisInklGebuehren = computed(() => gesamtPreisGeldkurs.value + gebuehren.value);
-        const gesamtPreisBriefkursInklGebuehren = computed(() => gesamtPreisBriefkurs.value - gebuehrenBriefkurs.value);
+        const gesamtPreisInklGebuehren = computed(() => gesamtPreisGeldkurs.value - gebuehren.value);
+        const gesamtPreisBriefkursInklGebuehren = computed(() => gesamtPreisBriefkurs.value + gebuehrenBriefkurs.value);
 
         const handleKaufen = () => {
             if (anzahlAktien.value > 0) {
-                const kosten = gesamtPreisGeldkurs.value + gebuehren.value;
+                const kosten = gesamtPreisBriefkurs.value + gebuehrenBriefkurs.value;
                 if (aktuellesGuthaben.value >= kosten) {
                     depotBestand.value += parseInt(anzahlAktien.value, 10);
                     aktuellesGuthaben.value -= kosten;
 
                     anzahlAktienZumZeitpunkt.value = anzahlAktien.value;
-                    gebührenKaufenZumZeitpunkt.value = gebuehren.value;
-                    kaufPreisZumZeitpunkt.value = gesamtPreisGeldkurs.value + gebuehren.value;
-                    const preis = gesamtPreisGeldkurs.value + gebuehren.value;
+                    gebührenKaufenZumZeitpunkt.value = gebuehrenBriefkurs.value;
+                    kaufPreisZumZeitpunkt.value = gesamtPreisBriefkurs.value + gebuehrenBriefkurs.value;
 
-                    store.dispatch('aktualisiereAnzahlAktienImGeldbeutel', depotBestand);
-                    store.dispatch('aktualisiereGuthaben', -preis);
+
+                    store.dispatch('aktualisiereDepotBestand', depotBestand.value);
+                    store.dispatch('aktualisiereGuthaben', -kosten);
 
                     openZusammenfassungKaufenModal();
                 } else {
@@ -376,25 +355,21 @@ export default {
         const handleVerkaufen = () => {
             // Stelle sicher, dass anzahlAktien und depotBestand korrekt verglichen werden
             if (anzahlAktien.value > 0 && anzahlAktien.value <= depotBestand.value) {
-                const erloes = gesamtPreisBriefkurs.value - gebuehrenBriefkurs.value;
+                const erloes = gesamtPreisGeldkurs.value - gebuehren.value;
                 depotBestand.value -= parseInt(anzahlAktien.value, 10);
                 aktuellesGuthaben.value += erloes;
 
                 anzahlAktienZumZeitpunkt.value = anzahlAktien.value;
-                verkaufPreisZumZeitpunkt.value = gesamtPreisBriefkurs.value - gebuehrenBriefkurs.value;
-                gebührenVerkaufenZumZeitpunkt.value = gebuehrenBriefkurs.value;
-
-
-                // Reduziere depotBestand, da Aktien verkauft werden
-                const preis = gesamtPreisBriefkurs.value + gebuehren.value;
+                verkaufPreisZumZeitpunkt.value = gesamtPreisGeldkurs.value - gebuehren.value;
+                gebührenVerkaufenZumZeitpunkt.value = gebuehren.value;
 
                 // Aktualisiere den Store mit den neuen Werten
-                store.dispatch('aktualisiereAnzahlAktienImGeldbeutel', depotBestand.value);
-                store.dispatch('aktualisiereGuthaben', -preis);
+                store.dispatch('aktualisiereDepotBestand', depotBestand.value);
+                store.dispatch('aktualisiereGuthaben', erloes);
 
                 // Öffne das Modal für die Zusammenfassung des Verkaufs
                 openZusammenfassungVerkaufenModal();
-           
+
             } else if (anzahlAktien.value > depotBestand.value) {
                 // Benachrichtige den Benutzer, wenn versucht wird, mehr Aktien zu verkaufen als vorhanden
                 alert("Sie haben nicht so viele Aktien im Depot.");
@@ -479,12 +454,19 @@ export default {
             // Korrekte Verwendung von .value zum Aktualisieren der Werte
             lastBuyPrice.value += buyPriceChange;
             lastSellPrice.value += sellPriceChange;
+            handlePriceUpdate(lastSellPrice.value);
 
             // Aktualisiere den Chart mit den neuen Datenpunkten
             lineChart.data.datasets[0].data.push({ x: new Date(), y: lastBuyPrice.value });
             lineChart.data.datasets[1].data.push({ x: new Date(), y: lastSellPrice.value });
 
             lineChart.update();
+
+        };
+
+        const handlePriceUpdate = (newSellPrice) => {
+            store.dispatch('updateLastSellPrice', newSellPrice);
+            lastSellPrice.value = newSellPrice; // Aktualisiere auch den lokalen Zustand, falls notwendig
         };
 
         onMounted(() => {
