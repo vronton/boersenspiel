@@ -1,7 +1,7 @@
 <template>
   <div class="card border-light shadow-sm p-3 mb-5 bg-white rounded">
     <div class="card-body">
-      <h3>Geldbeutel</h3>
+      <h3>Übersicht</h3>
       <table class="table table-borderless">
         <tbody>
           <tr>
